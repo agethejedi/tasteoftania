@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Taste of Tania — Content Studio</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400;1,700&family=DM+Sans:wght@300;400;500;600&family=Cormorant+Garamond:ital,wght@1,300;1,500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --crimson: #C0392B; --crimson-dark: #96231A; --deep: #0f0705;
+    --gold: #c9a96e; --card-bg: #1a0d0a; --border: rgba(255,255,255,0.08);
+  }
+  body { background: var(--deep); font-family: 'DM Sans', sans-serif; color: #fff; min-height: 100vh; overflow-x: hidden; }
+  body::before {
+    content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 1000; opacity: 0.3;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.05'/%3E%3C/svg%3E");
+  }
+  header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 22px 48px; border-bottom: 1px solid var(--border);
+    position: sticky; top: 0; background: rgba(15,7,5,0.94); backdrop-filter: blur(20px); z-index: 100;
+  }
+  .logo { font-family: 'Playfair Display', serif; font-size: 20px; font-style: italic; }
+  .logo span { color: var(--crimson); }
+  .hbadge { display: flex; align-items: center; gap: 8px; font-size: 11px; color: rgba(255,255,255,0.35); }
+  .ldot { width: 6px; height: 6px; background: #4ade80; border-radius: 50%; animation: pulse 2s infinite; }
+  .studio { display: grid; grid-template-columns: 320px 1fr; min-height: calc(100vh - 67px); }
+  .left { border-right: 1px solid var(--border); padding: 28px 24px; overflow-y: auto; background: rgba(255,255,255,0.015); }
+  .plabel { font-size: 10px; letter-spacing: 0.25em; text-transform: uppercase; color: var(--gold); font-weight: 600; margin-bottom: 14px; }
+  .psec { margin-bottom: 30px; }
+
+  /* Image grid */
+  .igrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+  .iopt {
+    aspect-ratio: 1; border-radius: 8px; overflow: hidden; cursor: pointer;
+    border: 2px solid transparent; transition: all 0.2s; position: relative;
+    background: var(--card-bg); display: flex; align-items: center; justify-content: center; font-size: 26px;
+  }
+  .iopt:hover { border-color: rgba(192,57,43,0.5); }
+  .iopt.sel { border-color: var(--crimson); box-shadow: 0 0 0 1px var(--crimson); }
+  .ilbl { position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(transparent, rgba(0,0,0,0.85)); font-size: 9px; color: rgba(255,255,255,0.8); padding: 10px 4px 5px; text-align: center; }
+
+  /* Pillar */
+  .pbtnlist { display: flex; flex-direction: column; gap: 7px; }
+  .pbtn {
+    display: flex; align-items: center; gap: 10px; padding: 11px 14px;
+    border-radius: 10px; border: 1px solid var(--border); background: transparent;
+    color: rgba(255,255,255,0.55); cursor: pointer; transition: all 0.2s;
+    font-family: 'DM Sans', sans-serif; font-size: 13px; text-align: left;
+  }
+  .pbtn:hover { background: rgba(255,255,255,0.05); color: #fff; }
+  .pbtn.sel { background: rgba(192,57,43,0.15); border-color: var(--crimson); color: #fff; }
+  .pbtn .ic { font-size: 18px; }
+  .pbtn .nm { font-weight: 500; }
+  .pbtn .ds { font-size: 10px; color: rgba(255,255,255,0.35); margin-top: 1px; }
+
+  /* Tone */
+  .tchips { display: flex; flex-wrap: wrap; gap: 7px; }
+  .tchip {
+    padding: 5px 13px; border-radius: 100px; border: 1px solid var(--border);
+    font-size: 12px; color: rgba(255,255,255,0.45); cursor: pointer; transition: all 0.2s;
+    background: transparent; font-family: 'DM Sans', sans-serif;
+  }
+  .tchip:hover { color: #fff; border-color: rgba(255,255,255,0.3); }
+  .tchip.sel { background: var(--crimson); border-color: var(--crimson); color: #fff; }
+
+  /* API input */
+  .ainput {
+    width: 100%; background: rgba(255,255,255,0.05); border: 1px solid var(--border);
+    border-radius: 10px; padding: 10px 13px; color: #fff; font-size: 13px;
+    font-family: 'DM Sans', sans-serif; outline: none; transition: border-color 0.2s;
+  }
+  .ainput:focus { border-color: var(--gold); }
+  .ainput::placeholder { color: rgba(255,255,255,0.2); }
+  .ahint { font-size: 10px; color: rgba(255,255,255,0.25); margin-top: 7px; line-height: 1.6; }
+
+  /* Gen button */
+  .gbtn {
+    width: 100%; padding: 15px; background: var(--crimson); border: none; border-radius: 12px;
+    color: #fff; font-family: 'Playfair Display', serif; font-size: 17px; font-style: italic;
+    cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px;
+    position: relative; overflow: hidden;
+  }
+  .gbtn::before {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(135deg, transparent, rgba(255,255,255,0.1), transparent);
+    transform: translateX(-100%); transition: transform 0.5s;
+  }
+  .gbtn:hover::before { transform: translateX(100%); }
+  .gbtn:hover { background: var(--crimson-dark); transform: translateY(-1px); box-shadow: 0 8px 24px rgba(192,57,43,0.35); }
+  .gbtn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
+
+  /* Spinner */
+  .spin { width: 17px; height: 17px; border: 2px solid rgba(255,255,255,0.3); border-top-color: #fff; border-radius: 50%; animation: spinA 0.7s linear infinite; display: none; }
+  .loading .spin { display: block; }
+  .loading .btxt { display: none; }
+
+  /* Right panel */
+  .right { padding: 36px 44px; overflow-y: auto; }
+  .empty { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; text-align: center; gap: 14px; opacity: 0.35; }
+  .eicon { font-size: 60px; }
+  .etitle { font-family: 'Playfair Display', serif; font-size: 26px; font-style: italic; }
+  .esub { font-size: 13px; color: rgba(255,255,255,0.45); max-width: 280px; line-height: 1.7; }
+
+  .oloading { display: none; flex-direction: column; align-items: center; justify-content: center; height: 100%; gap: 20px; }
+  .oloading.vis { display: flex; }
+  .lring { width: 52px; height: 52px; border: 3px solid rgba(192,57,43,0.2); border-top-color: var(--crimson); border-radius: 50%; animation: spinA 1s linear infinite; }
+  .ltxt { font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 20px; color: rgba(255,255,255,0.45); animation: flick 2s ease-in-out infinite; }
+
+  .oarea { display: none; flex-direction: column; gap: 24px; }
+  .oarea.vis { display: flex; animation: fadeUp 0.5s ease; }
+
+  /* Post preview */
+  .ppreview { background: var(--card-bg); border: 1px solid var(--border); border-radius: 18px; overflow: hidden; max-width: 420px; }
+  .phead { display: flex; align-items: center; gap: 11px; padding: 14px 18px; border-bottom: 1px solid var(--border); }
+  .pavatar {
+    width: 38px; height: 38px; border-radius: 50%; background: linear-gradient(135deg, var(--crimson), var(--gold));
+    display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; position: relative;
+  }
+  .pavatar::before { content: ''; position: absolute; inset: -2px; border-radius: 50%; background: linear-gradient(135deg, #f09433,#e6683c,#dc2743,#cc2366); z-index: -1; }
+  .pun { font-size: 12px; font-weight: 600; }
+  .ploc { font-size: 10px; color: rgba(255,255,255,0.35); }
+  .pimg { aspect-ratio: 1; background: #111; display: flex; align-items: center; justify-content: center; font-size: 72px; position: relative; overflow: hidden; }
+  .pimg::after { content: ''; position: absolute; inset: 0; background: linear-gradient(to bottom, transparent 60%, rgba(0,0,0,0.4)); }
+  .pacts { display: flex; gap: 14px; padding: 12px 18px 8px; font-size: 20px; }
+  .pcaption { padding: 0 18px 18px; }
+  .pcap { font-size: 12px; line-height: 1.8; color: rgba(255,255,255,0.8); white-space: pre-wrap; }
+  .phtags { font-size: 11px; color: #6cb4e4; margin-top: 6px; line-height: 2; }
+
+  /* Cards */
+  .ccard { background: var(--card-bg); border: 1px solid var(--border); border-radius: 14px; padding: 24px; }
+  .cchead { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+  .cctitle { font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold); font-weight: 600; }
+  .copybtn { padding: 5px 13px; border-radius: 100px; border: 1px solid var(--border); background: transparent; color: rgba(255,255,255,0.45); font-size: 11px; cursor: pointer; transition: all 0.2s; font-family: 'DM Sans', sans-serif; }
+  .copybtn:hover { border-color: var(--gold); color: var(--gold); }
+  .copybtn.copied { border-color: #4ade80; color: #4ade80; }
+  .capout { font-size: 14px; line-height: 1.9; color: rgba(255,255,255,0.82); white-space: pre-wrap; }
+  .htout { font-size: 13px; color: #6cb4e4; line-height: 2.2; }
+
+  /* Voice */
+  .vcard { background: linear-gradient(135deg, rgba(192,57,43,0.14), rgba(201,169,110,0.07)); border: 1px solid rgba(192,57,43,0.28); border-radius: 14px; padding: 24px; }
+  .vplayer { display: flex; align-items: center; gap: 14px; margin-top: 14px; }
+  .playbtn { width: 50px; height: 50px; border-radius: 50%; background: var(--crimson); border: none; color: #fff; font-size: 18px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .playbtn:hover { background: var(--crimson-dark); transform: scale(1.06); }
+  .playbtn:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
+  .wf { flex: 1; height: 38px; background: rgba(255,255,255,0.04); border-radius: 100px; overflow: hidden; display: flex; align-items: center; padding: 0 14px; gap: 3px; }
+  .wb { width: 3px; background: var(--crimson); border-radius: 100px; opacity: 0.35; }
+  .wf.playing .wb { animation: waveA 0.8s ease-in-out infinite; opacity: 1; }
+  .wf.playing .wb:nth-child(2n) { animation-delay: 0.1s; }
+  .wf.playing .wb:nth-child(3n) { animation-delay: 0.22s; }
+  .wf.playing .wb:nth-child(5n) { animation-delay: 0.15s; }
+  .vlbl { font-size: 11px; color: rgba(255,255,255,0.35); margin-top: 10px; }
+  .vstatus { font-size: 12px; color: var(--gold); }
+
+  /* Toast */
+  .toast { position: fixed; bottom: 28px; right: 28px; background: #1c1c1c; border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 12px 18px; font-size: 13px; color: #fff; z-index: 999; transform: translateY(16px); opacity: 0; transition: all 0.3s; pointer-events: none; }
+  .toast.show { transform: translateY(0); opacity: 1; }
+
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes spinA { to { transform: rotate(360deg); } }
+  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
+  @keyframes waveA { 0%,100% { height: 6px; } 50% { height: 26px; } }
+  @keyframes flick { 0%,100% { opacity: 0.45; } 50% { opacity: 0.75; } }
+
+  ::-webkit-scrollbar { width: 5px; }
+  ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 3px; }
+
+  @media (max-width: 860px) {
+    .studio { grid-template-columns: 1fr; }
+    .left { border-right: none; border-bottom: 1px solid var(--border); }
+    header { padding: 16px 20px; }
+    .right { padding: 24px 18px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">Taste of <span>Tania</span> · Content Studio</div>
+  <div class="hbadge"><div class="ldot"></div>Claude + ElevenLabs</div>
+</header>
+
+<div class="studio">
+
+  <!-- LEFT -->
+  <div class="left">
+
+    <div class="psec">
+      <div class="plabel">1 · Choose a scene</div>
+      <div class="igrid" id="igrid">
+        <div class="iopt sel" data-scene="Tania in a chef's coat plating an exquisite Cambodian-Texan fusion dish, confident and focused" data-emoji="👩‍🍳" onclick="selImg(this)">
+          <span>👩‍🍳</span><div class="ilbl">Kitchen</div>
+        </div>
+        <div class="iopt" data-scene="Tania wearing a bold red mini dress in her fashion studio, surrounded by garment racks, posing with poise" data-emoji="👗" onclick="selImg(this)">
+          <span>👗</span><div class="ilbl">Fashion</div>
+        </div>
+        <div class="iopt" data-scene="Tania on a Dallas rooftop at golden hour, cocktail in hand, skyline glowing behind her" data-emoji="🌆" onclick="selImg(this)">
+          <span>🌆</span><div class="ilbl">Rooftop</div>
+        </div>
+        <div class="iopt" data-scene="Tania at a vibrant farmers market, selecting fresh lemongrass, galangal, and exotic herbs with a warm smile" data-emoji="🌿" onclick="selImg(this)">
+          <span>🌿</span><div class="ilbl">Market</div>
+        </div>
+        <div class="iopt" data-scene="Tania in a chic business outfit, presenting in a sleek boardroom to investors with total command of the room" data-emoji="💼" onclick="selImg(this)">
+          <span>💼</span><div class="ilbl">Business</div>
+        </div>
+        <div class="iopt" data-scene="Tania at a beautifully styled dinner table with Cambodian-inspired decor and Texas BBQ fusion dishes" data-emoji="🥂" onclick="selImg(this)">
+          <span>🥂</span><div class="ilbl">Dining</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="psec">
+      <div class="plabel">2 · Content pillar</div>
+      <div class="pbtnlist">
+        <button class="pbtn sel" data-pillar="Food & Culture" onclick="selPillar(this)">
+          <span class="ic">🍜</span><div><div class="nm">Flavor & Culture</div><div class="ds">Recipes, heritage, kitchen stories</div></div>
+        </button>
+        <button class="pbtn" data-pillar="Fashion & Style" onclick="selPillar(this)">
+          <span class="ic">👗</span><div><div class="nm">Style & Brand</div><div class="ds">Fashion drops, OOTD, design</div></div>
+        </button>
+        <button class="pbtn" data-pillar="Entrepreneur & Business" onclick="selPillar(this)">
+          <span class="ic">💼</span><div><div class="nm">Entrepreneur Life</div><div class="ds">Building, scaling, selling</div></div>
+        </button>
+        <button class="pbtn" data-pillar="Heritage & Identity" onclick="selPillar(this)">
+          <span class="ic">🌏</span><div><div class="nm">Roots & Identity</div><div class="ds">Cambodian-Texan story</div></div>
+        </button>
+      </div>
+    </div>
+
+    <div class="psec">
+      <div class="plabel">3 · Tone</div>
+      <div class="tchips">
+        <button class="tchip sel" onclick="selTone(this)">Confident</button>
+        <button class="tchip" onclick="selTone(this)">Playful</button>
+        <button class="tchip" onclick="selTone(this)">Vulnerable</button>
+        <button class="tchip" onclick="selTone(this)">Inspirational</button>
+        <button class="tchip" onclick="selTone(this)">Sensual</button>
+        <button class="tchip" onclick="selTone(this)">Witty</button>
+      </div>
+    </div>
+
+    <div class="psec">
+      <div class="plabel">4 · ElevenLabs API Key</div>
+      <input type="password" class="ainput" id="elkey" placeholder="sk_..." />
+      <p class="ahint">Used only to stream Tania's voice. Never stored or logged.</p>
+    </div>
+
+    <button class="gbtn" id="gbtn" onclick="generate()">
+      <div class="spin" id="spin"></div>
+      <span class="btxt">✦ Generate Content</span>
+    </button>
+
+  </div>
+
+  <!-- RIGHT -->
+  <div class="right" id="right">
+
+    <div class="empty" id="empty">
+      <div class="eicon">✦</div>
+      <div class="etitle">Your content awaits</div>
+      <p class="esub">Pick a scene, pillar, and tone — then let Tania speak.</p>
+    </div>
+
+    <div class="oloading" id="oloading">
+      <div class="lring"></div>
+      <div class="ltxt">Tania is composing...</div>
+    </div>
+
+    <div class="oarea" id="oarea">
+
+      <div class="ppreview">
+        <div class="phead">
+          <div class="pavatar">🌶️</div>
+          <div><div class="pun">tasteoftania</div><div class="ploc">Dallas, Texas</div></div>
+          <div style="margin-left:auto;font-size:16px;color:rgba(255,255,255,0.35)">⋯</div>
+        </div>
+        <div class="pimg" id="pimg"><span id="pemoji">👩‍🍳</span></div>
+        <div class="pacts"><span>🤍</span><span>💬</span><span>➤</span><span style="margin-left:auto">🔖</span></div>
+        <div class="pcaption">
+          <span style="font-size:12px;font-weight:600">tasteoftania </span>
+          <p class="pcap" id="pcap"></p>
+          <p class="phtags" id="phtags"></p>
+        </div>
+      </div>
+
+      <div class="ccard">
+        <div class="cchead">
+          <div class="cctitle">📝 Caption</div>
+          <button class="copybtn" onclick="cp('capout',this)">Copy</button>
+        </div>
+        <div class="capout" id="capout"></div>
+      </div>
+
+      <div class="ccard">
+        <div class="cchead">
+          <div class="cctitle">🏷 Hashtags</div>
+          <button class="copybtn" onclick="cp('htout',this)">Copy</button>
+        </div>
+        <div class="htout" id="htout"></div>
+      </div>
+
+      <div class="vcard">
+        <div class="cchead">
+          <div class="cctitle">🎙 Tania's Voice · ElevenLabs</div>
+          <span class="vstatus" id="vstatus"></span>
+        </div>
+        <div class="vplayer">
+          <button class="playbtn" id="playbtn" onclick="togglePlay()" disabled>▶</button>
+          <div class="wf" id="wf"></div>
+        </div>
+        <div class="vlbl" id="vlbl">Enter your ElevenLabs API key and generate to hear Tania speak.</div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<audio id="audio"></audio>
+
+<script>
+const VOICE_ID = 'knJcCBNKPnJDauT52tkc';
+let selScene = document.querySelector('.iopt.sel');
+let selPil = document.querySelector('.pbtn.sel');
+let selTn = document.querySelector('.tchip.sel');
+let isPlaying = false;
+
+// Build waveform
+const wf = document.getElementById('wf');
+for (let i = 0; i < 38; i++) {
+  const b = document.createElement('div');
+  b.className = 'wb';
+  b.style.height = (Math.random() * 18 + 5) + 'px';
+  wf.appendChild(b);
+}
+
+function selImg(el) { document.querySelectorAll('.iopt').forEach(e=>e.classList.remove('sel')); el.classList.add('sel'); selScene=el; }
+function selPillar(el) { document.querySelectorAll('.pbtn').forEach(e=>e.classList.remove('sel')); el.classList.add('sel'); selPil=el; }
+function selTone(el) { document.querySelectorAll('.tchip').forEach(e=>e.classList.remove('sel')); el.classList.add('sel'); selTn=el; }
+
+async function generate() {
+  const btn = document.getElementById('gbtn');
+  const scene = selScene?.dataset.scene || 'a lifestyle moment';
+  const pillar = selPil?.dataset.pillar || 'Food & Culture';
+  const tone = selTn?.textContent || 'Confident';
+
+  btn.disabled = true;
+  btn.classList.add('loading');
+  document.getElementById('empty').style.display = 'none';
+  document.getElementById('oarea').classList.remove('vis');
+  document.getElementById('oloading').classList.add('vis');
+  document.getElementById('playbtn').disabled = true;
+  document.getElementById('vstatus').textContent = '';
+  document.getElementById('vlbl').textContent = 'Generating...';
+
+  const prompt = `You are writing Instagram content for Tania — a 35-year-old Cambodian-American chef, entrepreneur, and fashion founder based in DFW, Texas. Born in Cambodia, raised in Texas. She built and sold multiple successful DFW restaurants and runs her own fashion brand. Her IG handle is @tasteoftania.
+
+Scene: ${scene}
+Pillar: ${pillar}
+Tone: ${tone}
+
+Return ONLY a JSON object with NO markdown backticks, NO preamble, NO extra text — just raw JSON:
+{
+  "caption": "Full Instagram caption, 2-4 short punchy paragraphs in Tania's authentic voice. Ends with an emotional hook or CTA.",
+  "hashtags": "20-25 relevant hashtags as a single space-separated string",
+  "voiceover": "2-3 sentence spoken version of the caption — warm, direct, conversational, as if Tania is speaking to camera"
+}`;
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+    const data = await res.json();
+    const raw = data.content.map(b => b.text||'').join('');
+    const clean = raw.replace(/```json|```/g,'').trim();
+    const parsed = JSON.parse(clean);
+
+    document.getElementById('pemoji').textContent = selScene?.dataset.emoji || '👩‍🍳';
+    document.getElementById('pcap').textContent = parsed.caption.substring(0,140) + '…';
+    document.getElementById('phtags').textContent = parsed.hashtags.split(' ').slice(0,7).join(' ');
+    document.getElementById('capout').textContent = parsed.caption;
+    document.getElementById('htout').textContent = parsed.hashtags;
+
+    document.getElementById('oloading').classList.remove('vis');
+    document.getElementById('oarea').classList.add('vis');
+
+    const key = document.getElementById('elkey').value.trim();
+    if (key) {
+      await genVoice(parsed.voiceover, key);
+    } else {
+      document.getElementById('vlbl').textContent = 'Enter your ElevenLabs API key and regenerate to hear Tania\'s voice.';
+    }
+  } catch(err) {
+    document.getElementById('oloading').classList.remove('vis');
+    document.getElementById('empty').style.display = 'flex';
+    showToast('⚠️ Error generating content.');
+    console.error(err);
+  }
+
+  btn.disabled = false;
+  btn.classList.remove('loading');
+}
+
+async function genVoice(text, key) {
+  document.getElementById('vstatus').textContent = '⟳ Generating…';
+  document.getElementById('vlbl').textContent = 'Connecting to ElevenLabs…';
+  try {
+    const res = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${VOICE_ID}`, {
+      method: 'POST',
+      headers: { 'xi-api-key': key, 'Content-Type': 'application/json', 'Accept': 'audio/mpeg' },
+      body: JSON.stringify({
+        text,
+        model_id: 'eleven_multilingual_v2',
+        voice_settings: { stability: 0.5, similarity_boost: 0.8, style: 0.3, use_speaker_boost: true }
+      })
+    });
+    if (!res.ok) throw new Error(res.status);
+    const buf = await res.arrayBuffer();
+    const blob = new Blob([buf], { type: 'audio/mpeg' });
+    document.getElementById('audio').src = URL.createObjectURL(blob);
+    document.getElementById('playbtn').disabled = false;
+    document.getElementById('vstatus').textContent = '✓ Ready';
+    document.getElementById('vlbl').textContent = 'Click play to hear Tania speak this caption.';
+  } catch(err) {
+    document.getElementById('vstatus').textContent = '✗ Error';
+    document.getElementById('vlbl').textContent = 'Could not generate voice. Check your ElevenLabs API key.';
+    console.error(err);
+  }
+}
+
+function togglePlay() {
+  const a = document.getElementById('audio');
+  const btn = document.getElementById('playbtn');
+  const w = document.getElementById('wf');
+  if (isPlaying) {
+    a.pause(); btn.textContent = '▶'; w.classList.remove('playing'); isPlaying = false;
+  } else {
+    a.play(); btn.textContent = '⏸'; w.classList.add('playing'); isPlaying = true;
+    a.onended = () => { btn.textContent = '▶'; w.classList.remove('playing'); isPlaying = false; };
+  }
+}
+
+function cp(id, btn) {
+  navigator.clipboard.writeText(document.getElementById(id).textContent).then(() => {
+    btn.textContent = 'Copied!'; btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 2000);
+  });
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+</script>
+</body>
+</html>
